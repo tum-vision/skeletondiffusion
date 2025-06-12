@@ -1,0 +1,3 @@
+covariance_matrix_type: reachability
+reachability_matrix_degree_factor: 0.5
+reachability_matrix_stop_at: hips # or None 'hips' or null

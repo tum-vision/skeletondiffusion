@@ -1,0 +1,35 @@
+num_joints: 22 #including the hip root joint
+fps: 60
+
+multimodal_threshold: 0.4
+dataset_type: D3PWZeroShotDataset
+dataset_name: 3dpw
+precomputed_folder: "${dataset_precomputed_path}/3DPW/${task.task_name}/"
+annotations_folder: "${dataset_annotation_path}/3DPW/${task.task_name}/"
+dtype: float32
+
+data_loader_train_eval:
+    stride: 30
+    augmentation: 0
+    shuffle: False
+    da_mirroring: 0.
+    da_rotations: 0.
+    drop_last: False
+    if_load_mmgt: False
+
+data_loader_valid:
+    stride: 30
+    augmentation: 0
+    shuffle: False
+    segments_path: "${dataset.annotations_folder}/segments_valid.csv"
+    actions: "all"
+    drop_last: False
+    if_load_mmgt: False
+
+
+data_loader_test:
+    shuffle: False
+    segments_path: "${dataset.annotations_folder}/segments_test_zero_shot.csv"
+    actions: "all"
+    drop_last: False
+    if_load_mmgt: ${eval:'True if "probabilistic" in "${stats_mode}" else False'}

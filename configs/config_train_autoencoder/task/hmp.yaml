@@ -1,0 +1,11 @@
+if_consider_hip: False
+
+history_sec: 0.5
+prediction_horizon_sec: 2
+
+
+# Joint representation & Skeleton specs
+motion_repr_type: "SkeletonRescalePose"
+pose_box_size: 1.5 # in meters
+seq_centering: 0
+task_name: hmp

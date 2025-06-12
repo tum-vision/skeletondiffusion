@@ -1,0 +1,26 @@
+num_joints: 17 #including the hip root joint
+fps: 50
+dataset_type: H36MDataset
+dataset_name: "h36m"
+precomputed_folder: "${dataset_precomputed_path}/Human36M/${task.task_name}/"
+annotations_folder: "${dataset_annotation_path}/Human36M/${task.task_name}"
+dtype: float32
+multimodal_threshold: 0.5
+
+data_loader_valid:
+    augmentation: 0
+    shuffle: False
+    subjects: ["S8"]
+    segments_path: "${dataset.annotations_folder}/segments_valid.csv"
+    actions: "all"
+    drop_last: False
+    if_load_mmgt:  ${eval:'True if "probabilistic in str(${stats_mode})" else False'}
+
+data_loader_test:
+    shuffle: False
+    augmentation: 0
+    segments_path: "${dataset.annotations_folder}/segments_test.csv"
+    subjects: ["S9", "S11"]
+    actions: "all"
+    drop_last: False
+    if_load_mmgt: ${eval:'True if "probabilistic" in "${stats_mode}" else False'}

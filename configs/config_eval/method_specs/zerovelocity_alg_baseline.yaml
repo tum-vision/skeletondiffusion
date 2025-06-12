@@ -1,0 +1,3 @@
+motion_repr_type: "SkeletonCenterPose"
+method_name: ZeroVelocityBaseline
+baseline_out_path: ./models/baselines
