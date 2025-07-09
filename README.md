@@ -1,4 +1,4 @@
-# SkeletonDiffusion - Nonisotropic Gaussian Diffusion for Reaslitic 3D Human Motion Prediction (CVPR 2025)
+# SkeletonDiffusion - Nonisotropic Gaussian Diffusion for Realistic 3D Human Motion Prediction (CVPR 2025)
 **[Website](https://ceveloper.github.io/publications/skeletondiffusion/)** | 
 **[Paper](https://arxiv.org/abs/2501.06035)**   |
 **[Video](https://www.youtube.com/watch?v=W9GzdDXN41M)**  | 
@@ -52,6 +52,9 @@ Together with the latent diffusion model SkeletonDiffusion, we introduce a train
 - [Training](#training)
   - [Autoencoder](#1-autoencoder)
   - [Diffusion](#2-diffusion)
+    - [About Training Time](#about-training-time)
+  - [How to Resume Training](#how-to-resume-training)
+  - [Running our Implementation as Isotropic](#running-our-implementation-as-isotropic)
 
 ## Nonisotropic Gaussian Diffusion - Plug-and-play
 In our paper SkeletonDiffusion, nonisotropic diffusion is performed extracting correlations from the adjacency matrix of the human skeleton. If you are working on a problem described by an adjacency matrix or the correlations between components of your problem (for nus human body joints) are available, you can try training your diffusion model with our nonisotropic Gaussian diffusion implementation. 
@@ -132,7 +135,9 @@ conda create --name skeldiff python=3.10 -y
 conda activate skeldiff
 conda config --env --add channels pytorch
 conda config --env --add channels conda-forge
-conda install pytorch==2.0.1 torchvision==0.15.2 cudatoolkit=11.8 -c pytorch -y
+conda install pytorch==2.0.1 torchvision==0.15.2 cudatoolkit==11.8 -c pytorch -y
+# If the previous line installs pytorch cpu only version, substitute with the following:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 conda install numpy=1.25 scikit-image=0.24.0 scipy=1.11.3 pillow=9.4.0 pip ignite=0.4.13 pyyaml=6.0.1 einops=0.7.0  hydra-core=1.3.2 zarr=2.18.0 tensorboard=2.15.0 tabulate=0.9.0 cdflib=1.2.3 ipython=8.16.1 jupyter==1.0.0 tqdm
 matplotlib=3.8.0 -c conda-forge -y
 pip install denoising-diffusion-pytorch==1.9.4 git+https://github.com/nghorbani/human_body_prior@4c246d8
@@ -159,7 +164,7 @@ We follow the same dataset creation pipeline as https://github.com/BarqueroGerma
 
 Download the *SMPL+H G* files for **22 datasets**: ACCAD, BMLhandball, BMLmovi, BMLrub, CMU, DanceDB, DFaust, EKUT, EyesJapanDataset, GRAB, HDM05, HUMAN4D, HumanEva, KIT, MoSh, PosePrior (MPI_Limits), SFU, SOMA, SSM, TCDHands, TotalCapture, and Transitions. Then, move the **tar.bz2** files to `./datasets/raw/AMASS` (DO NOT extract them). 
 
-Now, download the 'DMPLs for AMASS' from [here](https://smpl.is.tue.mpg.de), and the 'Extended SMPL+H model' from [here](https://mano.is.tue.mpg.de/). Move both extracted folders (dmpls, smplh) to `./datasets/annotations/AMASS/body_models`. Then, run:
+Now, download the 'DMPLs for AMASS' from [here](https://smpl.is.tue.mpg.de), and the 'Extended SMPL+H model' from [here](https://mano.is.tue.mpg.de/). Move both extracted folders (dmpls, smplh) to `./datasets/annotations/AMASS/bodymodels`. Then, run:
 ```bash
 cd src
 python -m data.create_amass_dataset --gpu --if_extract_zip
@@ -254,8 +259,31 @@ python train_autoencoder.py dataset=h36m model.num_epochs=200
 
 ### 2. Diffusion
 
-Train our Nonisotropic diffusion on top of the previously trained latent space and autoencoder, you will need a 48GB GPU (A40). This part of the training is quite slow, due to necessaity of encoding and decoding latent embeddings via the recurrent autoencoder. 
+Train our Nonisotropic diffusion on top of the previously trained latent space and autoencoder, you will need a 48GB GPU (A40). 
+
 ![alt text](./figures/arch_diffusion.jpg)
+
+
+### About Training Time
+The diffusion part of the training is quite slow, due to necessity of encoding and decoding latent embeddings via the recurrent autoencoder. If you want to reduce the training time, you can train less performant models by relaxing the diffusion training objective (See Appendix E.4 and results for AMASS).
+
+
+|    Model                                     | Training Time (AMASS) |   APD $\uparrow$  |            | CMD $\downarrow$|            | str mean $\downarrow$   | str RMSE $\downarrow$ |
+|----------------------------------------------|-----------------------|-------------------|------------|----------------|------------|---------------------|----------|
+| k=1                                          | ~1d 7h (<48GB GPU)    | 4.987             |            | 16.574         |            | 3.50                | 4.56     |
+| k=50 latent argmin                           | ~1d 14h (<48GB GPU)   | 8.497             |            | 12.885         |            | 3.17                | 4.35     |
+| k=50 motion space argmin (SkeletonDiffusion) | ~6d (48GB GPU)        | 9.456             |            | 11.418         |            | 3.15                | 4.45     |
+
+
+To train the model with _k=1_ (without loss relaxation) append ```model.train_pick_best_sample_among_k=1``` to your training arguments:
+```bash
+python train_diffusion.py model.train_pick_best_sample_among_k=1 <your training arguments>
+```
+
+To train the model by choosing the sample to backpropagate the loss in laten space with k=50 (_k=50 latent argmin_) append ```model.similarity_space=latent_space``` to your training arguments:
+```bash
+python train_diffusion.py model.similarity_space=latent_space <your training arguments>
+``` 
 
 #### AMASS
 ```bash
@@ -272,3 +300,33 @@ python train_diffusion.py model=skeleton_diffusion model.pretrained_autoencoder_
 ```bash
 python train_diffusion.py model=skeleton_diffusion model.pretrained_autoencoder_path=./output/hmp/h36m/autoencoder/<your folder>/checkpoints/<checkpoint name>.pt dataset_folder_log_path=h36m model.num_epochs=100 model.diffusion_arch.attn_heads=8  model.lr_scheduler_kwargs.gamma_decay=0.85 model.lr_scheduler_kwargs.warmup_duration=25
 ```
+
+### How to Resume Training
+
+To resume training from an experiment repository and a saved checkpoint, you can run the corresponding train script and append a few arguments:
+
+```bash
+python train_<model>.py if_resume_training=True load=True output_log_path=<path to experiemnt repository> load_path=<path to .pt checkpoint> <your other arguments>
+```
+
+For an example checkpoint  _./output/hmp/amass/diffusion/June30_11-35-08/checkpoints/checkpoint_144.pt_, you would run:
+```bash
+python train_diffusion.py if_resume_training=True load=True output_log_path=<./output/hmp/amass/diffusion/June30_11-35-08 load_path=./output/hmp/amass/diffusion/June30_11-35-08/checkpoints/checkpoint_144.pt <your other training arguments of the previous call>
+```
+
+### Running our Implementation as Isotropic
+
+Our Nonisotropic implemetation supports also isotropic diffusion (our _isotropic_ ablations of Table 7.). This may be useful to you if you want to use our codebase for other projects and want to reduce classes/complexity. 
+
+To run our nonisotropic diffusion as isotropic with a suitable choice of covariance matrix:
+
+```bash
+python train_diffusion.py model=skeleton_diffusion_run_code_as_isotropic <your training arguments>
+```
+
+To run the isotropic diffusion codebase as in BeLFusion or lucidrain:
+```bash
+python train_diffusion.py model=isotropic_diffusion <your training arguments>
+```
+
+For the same random initialization and environment, both trainings return exactly the same weights.

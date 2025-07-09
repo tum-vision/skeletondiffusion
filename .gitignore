@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-./output/*
+output/*
 ./datasets/raw/*
 ./datasets/processed/*
 ./trained_models/*

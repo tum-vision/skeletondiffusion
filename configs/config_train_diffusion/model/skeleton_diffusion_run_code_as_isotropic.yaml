@@ -1,6 +1,4 @@
-_pretrained_GM_checkpoint: checkpoint_final
-pretrained_autoencoder_path: '${model.pretrained_GM_folder}/checkpoints/${model._pretrained_GM_checkpoint}.pt' 
-pretrained_GM_folder: ${eval:"'./models/final_checkpoints/H36M/hmp/autoencoder/January19_19-24-04_ID1137310' if ${eval:"'${_load_saved_aoutoenc}'.split('-')[1] == 'h36m'"}   else './models/final_checkpoints/AMASS/hmp/autoencoder/May11_10-35-09_ID1185354'"} 
+pretrained_autoencoder_path: './output/models/AMASS/hmp/autoencoder/checkpoints/checkpoint_final.pt' 
 
 
 lr: 1.e-3 

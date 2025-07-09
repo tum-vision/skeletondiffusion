@@ -106,7 +106,8 @@ def extract_dataset(original_folder, precomputed_folder, models_dir, datasets=No
         bm_fname = os.path.join(models_dir, 'smplh/{}/model.npz'.format(gender))
         dmpl_fname = os.path.join(models_dir, 'dmpls/{}/model.npz'.format(gender))
 
-        bm[gender] = BodyModel(bm_path=bm_fname, num_betas=num_betas, model_type='smplh').to(comp_device)
+        bm[gender] = BodyModel(bm_fname=bm_fname, num_betas=num_betas, model_type='smplh').to(comp_device)
+
         faces[gender] = c2c(bm[gender].f)
 
     print("All resources initialized")

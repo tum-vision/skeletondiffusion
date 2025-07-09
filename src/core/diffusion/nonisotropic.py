@@ -33,7 +33,7 @@ def verify_noise_scale(diffusion):
     print("current: ", (zeta_noise**2).sum(-1).mean(0))
     print("original standard gaussian diffusion: ",(1-alphas) * zeta_noise.shape[-1])
 
-def compute_covariance_matrices(diffusion: torch.nn.Module,  Lambda_N: torch.Tensor,  diffusion_covariance_type='ani-isotropic', gamma_scheduler = 'cosine'):
+def compute_covariance_matrices(diffusion: torch.nn.Module,  Lambda_N: torch.Tensor,  diffusion_covariance_type='skeleton-diffusion', gamma_scheduler = 'cosine'):
     N, *_  = Lambda_N.shape
     alphas = 1. - diffusion.betas
     def _alpha_sumprod(alphas, t):
