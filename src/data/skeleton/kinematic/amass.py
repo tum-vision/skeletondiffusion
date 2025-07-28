@@ -23,12 +23,14 @@ class AMASSKinematic(Kinematic):
        [ 0.01109964, -0.02364293,  0.13600564],
        [ 0.003884  , -0.04299295,  0.03277576]])}
         
-        self.joint_dict_orig  = {0: 'GlobalRoot', 1: 'RHip', 2: 'LHip', 3: 'Spine1',       
-                                 4: 'RKnee', 5: 'LKnee', 6: 'Spine3', 
-                                 7: 'RHeel', 8: 'LHeel', 9: 'Neck', 10: 'RFoot', 
-                                 11: 'LFoot', 12: 'BMN', 13: 'RSI',        14: 'LSI', 15: 'Head',
-                                 16: 'RShoulder', 17: 'LShoulder', 18: 'RElbow',19: 'LElbow', 20: 'RWrist',21: 'LWrist'}
-        
+        self.joint_dict_orig  = {0: 'GlobalRoot', 1: 'LHip',  2: 'RHip',   3: 'Spine1',
+                                    4: 'LKnee',   5: 'RKnee',   6: 'Spine3',
+                                    7: 'LHeel', 8: 'RHeel',  9: 'Neck',
+                                    10: 'LFoot', 11: 'RFoot',
+                                    12: 'BMN',  13: 'LSI',  14: 'RSI',  15: 'Head',
+                                    16: 'LShoulder', 17: 'RShoulder',
+                                    18: 'LElbow', 19: 'RElbow', 20: 'LWrist', 21: 'RWrist'}
+
         self.limbseq = [ [0,3], [3,6], [6,9], [9,12], [12,15], # body
                         [9,14], [14,17], [17,19], [19,21], # right arm
                         [9,13], [13,16], [16,18], [18,20], # left arm
@@ -55,17 +57,16 @@ class AMASSKinematic(Kinematic):
                                 [37,38], [38,39],  [40,41], [41,42],  [43,44], [44,45],  [46,47], [47,48],  [49,50], [50,51], # falanges right hand
                             ]     
 
-
         self.left_right_limb_list = [False if (joint[0] == "L" and joint[1].isupper()) or 'left' in joint else True for joint in list(self.joint_dict_orig.values())]
-            
+
         if not self.if_consider_hip:
             self.node_dict = self.joint_dict_orig.copy()
             self.node_dict.pop(0)
             self.node_dict = {i:v for i,v in enumerate(list(self.node_dict.values()))}
             node_dict_reversed = {v:i for i,v in self.node_dict.items()}
-            self.node_limbseq = [[node_dict_reversed['RHip'], node_dict_reversed['LHip']], 
-                                    [node_dict_reversed['RHip'], node_dict_reversed['Spine1']], 
-                                    [node_dict_reversed['LHip'], node_dict_reversed['Spine1']],
+            self.node_limbseq = [[node_dict_reversed['LHip'], node_dict_reversed['RHip']], 
+                                    [node_dict_reversed['LHip'], node_dict_reversed['Spine1']], 
+                                    [node_dict_reversed['RHip'], node_dict_reversed['Spine1']],
                                     *[[limb[0] -1,  limb[1] -1] for limb in self.limbseq if limb[1] != 0 and limb[0] != 0]]
             # # index of limbs in limb_angles_idx for mae
             # index of joints in kinchain for limb dropping
