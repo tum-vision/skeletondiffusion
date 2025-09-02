@@ -1,4 +1,12 @@
 # SkeletonDiffusion - Nonisotropic Gaussian Diffusion for Realistic 3D Human Motion Prediction (CVPR 2025)
+
+---
+
+## ⭐ Official repository: [Ceveloper/SkeletonDiffusion](https://github.com/Ceveloper/SkeletonDiffusion)
+👉 Please star & contribute there — this repo is just a mirror.
+
+---
+
 **[Website](https://ceveloper.github.io/publications/skeletondiffusion/)** | 
 **[Paper](https://arxiv.org/abs/2501.06035)**   |
 **[Video](https://www.youtube.com/watch?v=W9GzdDXN41M)**  | 
